@@ -23,14 +23,24 @@ Apple Silicon via the Metal GPU. Think of it as the Apple-Silicon counterpart to
 Each is an **independent MLX reimplementation, not a port**; behavior is aligned
 to the upstream reference and verified by golden tests.
 
-## Where MLX (Metal) wins
+## Performance (M4 Max, 128 GB)
 
-Preliminary, M4 Max (full tables in the repo's `benchmarks/`):
+Full BERTopic pipeline on 164K documents × 4096 dimensions:
 
-- **Embedding** ~16×, **UMAP** ~12× faster → must use MLX.
-- **HDBSCAN pairwise-distance + MST** 45–135× at 5K–20K points → large-scale.
-- **HDBSCAN cluster extraction** stays on CPU (sequential tree traversal).
-- **c-TF-IDF** crossover ≈ 100 topics × 50K vocab (scale-dependent).
+| Stage | MLX (Metal) | CPU | Speedup |
+|---|---|---|---|
+| UMAP 5D | 20s | 480s | **24×** |
+| HDBSCAN | 4s | 5s | ~1× (sparse mode) |
+| c-TF-IDF | 0.6s | 0.8s | ~1× |
+| **End-to-end** | **25s** | **486s** | **~20×** |
+
+Smaller datasets are even faster: 32K docs in 4s, 11K in 0.5s.
+
+## Current version: 0.5.0
+
+- Includes workaround for [mlx-vis UMAP divergence](https://github.com/mlx-bertopic/mlx-bertopic/blob/main/patches/mlx_vis_umap_stability.md)
+  on large (>100K) high-dimensional datasets.
+- 63 tests passing, aligned to BERTopic 0.17.4 / hdbscan 0.8.x.
 
 ## License
 
